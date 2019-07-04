@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 
 @RestController
@@ -54,7 +55,15 @@ public class CategoryManageController {
             return isAdmin;
         }
         return categoryService.getParallelCategoryByParentId(categoryId);
+    }
 
+    @GetMapping("get_deep_child_id")
+    public ServerResponse<List<Integer>> getDeepChildId(HttpSession session,Integer categoryId){
+        ServerResponse isAdmin = this.checkAdmin(session);
+        if (!isAdmin.isSuccess()) {
+            return isAdmin;
+        }
+        return categoryService.getAllDeepChildId(categoryId);
     }
 
 }

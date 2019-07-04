@@ -6,21 +6,20 @@ import com.alag.mmall.common.ServerResponse;
 import com.alag.mmall.model.User;
 import com.alag.mmall.service.UserService;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 
-import org.apache.log4j.LogManager;
 
 @RestController
 @RequestMapping("/user/")
 public class UserController {
     @Autowired
     private UserService userService;
-    private Logger logger = LogManager.getLogger(UserController.class);
-
+    private static Logger logger = LoggerFactory.getLogger(UserController.class);
     /**
      * 用户登录
      *
@@ -53,7 +52,7 @@ public class UserController {
 
     @PostMapping("register")
     public ServerResponse register(User user) {
-        logger.info(user);
+        logger.info(user.toString());
         return userService.register(user);
     }
 

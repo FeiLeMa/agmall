@@ -2,8 +2,8 @@ package com.alag.mmall.config;
 
 import com.alibaba.druid.support.http.StatViewServlet;
 import com.alibaba.druid.support.http.WebStatFilter;
-import org.apache.log4j.LogManager;
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.annotation.Bean;
@@ -14,7 +14,7 @@ import java.util.Map;
 
 @Configuration
 public class DruidConfiguration {
-    private Logger logger = LogManager.getLogger(DruidConfiguration.class);
+    private static Logger logger = LoggerFactory.getLogger(DruidConfiguration.class);
     @Bean
     public ServletRegistrationBean druidServlet() {
         logger.info("init Druid Servlet Configuration ");

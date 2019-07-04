@@ -3,6 +3,8 @@ package com.alag.mmall.mapper;
 import com.alag.mmall.model.Category;
 import org.apache.ibatis.annotations.Mapper;
 
+import java.util.List;
+
 @Mapper
 public interface CategoryMapper {
     /**
@@ -52,4 +54,6 @@ public interface CategoryMapper {
      * @mbggenerated Mon Jul 01 16:02:53 CST 2019
      */
     int updateByPrimaryKey(Category record);
+
+    List<Category> selectCategoryByParentId(Integer parentId);
 }

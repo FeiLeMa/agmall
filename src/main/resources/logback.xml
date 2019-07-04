@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--
+        scan属性为ture，配置文件发生变化，将会重新加载，默认值为true
+        scanPeriod:设置扫描间隔，默认单位是毫秒
+        debug：默认设置为false，为true时将打印logback内部日志信息也就是logback运行状态的信息
+-->
+<configuration scan="true" scanPeriod="60 seconds" debug="false">
+    <!--        定义一个变量，方便引用-->
+    <property name="log_home" value="/Users/alag/Desktop/tmplog"/>
+    <property name="console_log_pattern" value="%red(%d{yyyy-MM-dd HH:mm:ss}) %green([%thread]) %highlight([%-5p]) %boldMagenta(%c:%L) - %cyan(%msg%n)"/>
+    <property name="rolling_file_log_pattern" value="[file-logback] %d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] [%-5p] %c:%L - %m%n"/>
+    <!--
+    ================================================================================================
+    ================================================================================================
+    ================================================================================================
+    -->
+    <!--
+            控制台
+            默认日志打印级别：DEBUG
+    -->
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <!--
+                LevelFilter:只打印这个level级别的日志;
+                <filter class="ch.qos.logback.classic.filter.LevelFilter">
+                    <level>error</level>
+                    <onMatch>DENY</onMatch>
+                    <onMismatch>ACCEPT</onMismatch>
+                </filter>
+                Threshold:打印level以上级别的日志;
+        -->
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <encoder>
+            <pattern>${console_log_pattern}</pattern>
+        </encoder>
+    </appender>
+    <!--
+    ================================================================================================
+    ================================================================================================
+    ================================================================================================
+    -->
+    <!--    日志文件-->
+    <appender name="file" class="ch.qos.logback.core.FileAppender">
+        <file>${log_home}/logback.log</file>
+        <!--        是否追加-->
+        <append>true</append>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <encoder>
+            <pattern>${rolling_file_log_pattern}</pattern>
+        </encoder>
+    </appender>
+    <!--
+    ================================================================================================
+    ================================================================================================
+    ================================================================================================
+    -->
+    <!--    滚动文件-->
+    <appender name="rollFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--        日志滚动的策略-->
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <!--            i表示生成日志的数量，默认最大值是7-->
+            <fileNamePattern>
+                ${log_home}/%d{yyyy-MM-dd,aux}/logback-%d{HH-mm-ss}-%i.log
+            </fileNamePattern>
+            <TimeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <!--                单个文件最大存储值-->
+                <MaxFileSize>2MB</MaxFileSize>
+            </TimeBasedFileNamingAndTriggeringPolicy>
+        </rollingPolicy>
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <encoder>
+            <pattern>${rolling_file_log_pattern}</pattern>
+        </encoder>
+    </appender>
+<!--
+================================================================================================
+================================================================================================
+================================================================================================
+-->
+    <!--            打包-->
+    <appender name="zipFile" class="ch.qos.logback.core.rolling.RollingFileAppender">
+            <file>${log_home}/file.log</file>
+            <rollingPolicy class="ch.qos.logback.core.rolling.FixedWindowRollingPolicy">
+                <!--
+                    当前日志超过指定大小之后进行压缩之后的文件名称及文件的位置，位置可以是相对的，也可以是绝对的
+                -->
+                <fileNamePattern>${log_home}/file.%i.log.zip</fileNamePattern>
+                <!--
+                    minIndex和maxIndex：控制%i这个值的最小值和最大值，最多可以归档日志文件个数
+                -->
+                <minIndex>1</minIndex>
+                <maxIndex>5</maxIndex>
+            </rollingPolicy>
+            <triggeringPolicy class="ch.qos.logback.core.rolling.SizeBasedTriggeringPolicy">
+                <!--
+                    maxFileSize：指定日志文件的最大存储值
+                -->
+                <maxFileSize>2kb</maxFileSize>
+            </triggeringPolicy>
+            <encoder>
+                <pattern>
+                    [logback-zip] %d{yyyy-MM-dd HH:mm:ss.SSS} [%-5p] %c:%L - %m%n
+                </pattern>
+            </encoder>
+    </appender>
+    <!--    根标签-->
+    <root>
+        <!--
+                指定启用的追加器的name值
+                level标签属性value的值为info，表示打印级别为info（全局）
+        -->
+        <!--        <level value="info"/>-->
+        <appender-ref ref="console"/>
+        <appender-ref ref="file"/>
+<!--        <appender-ref ref="zipFile"/>-->
+<!--        <appender-ref ref="rollFile"/>-->
+    </root>
+</configuration>

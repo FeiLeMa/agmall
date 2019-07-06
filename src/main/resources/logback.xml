@@ -28,9 +28,9 @@
                 </filter>
                 Threshold:打印level以上级别的日志;
         -->
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>info</level>
-        </filter>
+<!--        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+<!--            <level>info</level>-->
+<!--        </filter>-->
         <encoder>
             <pattern>${console_log_pattern}</pattern>
         </encoder>
@@ -45,9 +45,9 @@
         <file>${log_home}/logback.log</file>
         <!--        是否追加-->
         <append>true</append>
-        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
-            <level>info</level>
-        </filter>
+<!--        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">-->
+<!--            <level>info</level>-->
+<!--        </filter>-->
         <encoder>
             <pattern>${rolling_file_log_pattern}</pattern>
         </encoder>
@@ -108,13 +108,14 @@
                 </pattern>
             </encoder>
     </appender>
+    <logger name="com.alag.mmall.mapper" level="DEBUG"></logger>
     <!--    根标签-->
     <root>
         <!--
                 指定启用的追加器的name值
                 level标签属性value的值为info，表示打印级别为info（全局）
         -->
-        <!--        <level value="info"/>-->
+        <level value="DEBUG"/>
         <appender-ref ref="console"/>
         <appender-ref ref="file"/>
 <!--        <appender-ref ref="zipFile"/>-->

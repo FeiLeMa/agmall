@@ -1,5 +1,6 @@
 package com.alag.mmall.service.impl;
 
+import com.alag.mmall.common.Const;
 import com.alag.mmall.common.PropertiesUtil;
 import com.alag.mmall.common.ResponseCode;
 import com.alag.mmall.common.ServerResponse;
@@ -7,6 +8,7 @@ import com.alag.mmall.mapper.CategoryMapper;
 import com.alag.mmall.mapper.ProductMapper;
 import com.alag.mmall.model.Category;
 import com.alag.mmall.model.Product;
+import com.alag.mmall.service.CategoryService;
 import com.alag.mmall.service.ProductService;
 import com.alag.mmall.vo.ProductDetailVo;
 import com.alag.mmall.vo.ProductListVo;
@@ -14,6 +16,8 @@ import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -22,10 +26,14 @@ import java.util.List;
 
 @Service
 public class ProductServiceImpl implements ProductService {
+    private static Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
+
     @Autowired
     private ProductMapper productMapper;
     @Autowired
     private CategoryMapper categoryMapper;
+    @Autowired
+    private CategoryService categoryService;
 
 
     private ProductListVo assembleProductListVo(Product product) {
@@ -116,7 +124,7 @@ public class ProductServiceImpl implements ProductService {
         }
         Product product = productMapper.selectByPrimaryKey(productId);
         if (product == null) {
-            return ServerResponse.createByErrorMessage("产品不存在可能被下架或已删除");
+            return ServerResponse.createByErrorMessage("产品不存在");
         }
 
         ProductDetailVo productDetailVo = this.assembleProductDetailVo(product);
@@ -154,6 +162,56 @@ public class ProductServiceImpl implements ProductService {
         PageInfo pageInfo = new PageInfo(productList);
         pageInfo.setList(productListVos);
 
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    @Override
+    public ServerResponse<ProductDetailVo> getProductDetail(Integer productId) {
+        if (productId == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(), "参数不合法");
+        }
+        Product product = productMapper.selectByPrimaryKey(productId);
+        if (product == null) {
+            return ServerResponse.createByErrorMessage("产品不存在");
+        }
+        if (product.getStatus() != Const.ProductStatusEnum.ON_SALE.getCode()) {
+            return ServerResponse.createByErrorMessage("产品已下架");
+        }
+
+        ProductDetailVo productDetailVo = this.assembleProductDetailVo(product);
+        return ServerResponse.createBySuccess(productDetailVo);
+    }
+
+    @Override
+    public ServerResponse<PageInfo> getListByKeyword(String keyword, Integer categoryId, Integer pageNum, Integer pageSize) {
+        logger.info("keyword:{},categoryId:{},pageNum:{},pageSize:{}",keyword, categoryId, pageNum, pageSize);
+        if (StringUtils.isBlank(keyword) && null == categoryId) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(), "参数不可为空");
+        }
+
+        Category category = categoryMapper.selectByPrimaryKey(categoryId);
+        logger.info("category:",category);
+        if (category == null && StringUtils.isBlank(keyword)) {
+            PageHelper.startPage(pageNum, pageSize);
+            List<ProductListVo> productList = Lists.newArrayList();
+            PageInfo pageInfo = new PageInfo(productList);
+            logger.info("没有查到数据");
+            return ServerResponse.createBySuccess(pageInfo);
+        }
+        if (StringUtils.isNotBlank(keyword)) {
+            keyword = new StringBuilder("%").append(keyword).append("%").toString();
+        }
+
+        List<ProductListVo> productListVoList = Lists.newArrayList();
+        List<Integer> categoryIdList = categoryService.getAllDeepChildId(categoryId).getData();
+        PageHelper.startPage(pageNum, pageSize);
+        List<Product> productList = productMapper.getProductListByKeywordAndcategoryIdList(keyword, categoryIdList.size() == 0 ? null : categoryIdList);
+        for (Product product : productList) {
+            ProductListVo productListVo = assembleProductListVo(product);
+            productListVoList.add(productListVo);
+        }
+        PageInfo pageInfo = new PageInfo(productList);
+        pageInfo.setList(productListVoList);
         return ServerResponse.createBySuccess(pageInfo);
     }
 }

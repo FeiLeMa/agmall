@@ -220,4 +220,20 @@
       </if>
     </where>
   </select>
+
+  <select id="getProductListByKeywordAndcategoryIdList" parameterType="map" resultMap="BaseResultMap">
+    select <include refid="Base_Column_List"/>
+    from mmall_product
+    <where>
+      <if test="keyword != null">
+        and name like #{keyword}
+      </if>
+      <if test="categoryIdList != null" >
+        and category_id in
+        <foreach item="item" index="index" open="(" separator="," close=")" collection="categoryIdList">
+          #{item}
+        </foreach>
+      </if>
+    </where>
+  </select>
 </mapper>

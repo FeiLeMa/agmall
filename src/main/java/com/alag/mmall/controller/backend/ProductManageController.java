@@ -9,7 +9,6 @@ import com.alag.mmall.model.User;
 import com.alag.mmall.service.FileService;
 import com.alag.mmall.service.ProductService;
 import com.alag.mmall.vo.ProductDetailVo;
-import com.github.pagehelper.Page;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
 import org.apache.commons.lang3.StringUtils;
@@ -22,7 +21,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
-import java.util.List;
 import java.util.Map;
 
 @RestController

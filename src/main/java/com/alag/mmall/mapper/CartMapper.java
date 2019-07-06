@@ -2,6 +2,9 @@ package com.alag.mmall.mapper;
 
 import com.alag.mmall.model.Cart;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface CartMapper {
@@ -52,4 +55,16 @@ public interface CartMapper {
      * @mbggenerated Mon Jul 01 16:02:53 CST 2019
      */
     int updateByPrimaryKey(Cart record);
+
+    Cart selectCartByUserIdAndProductId(@Param("userId") Integer userId, @Param("productId") Integer productId);
+
+    List<Cart> selectAllCartByUserId(Integer userId);
+
+    int isCheckedByUserId(Integer userId);
+
+    int deleteByProductIds(@Param("userId") Integer userId,@Param("productIds") List<String> productIdList);
+
+    int checkedOrUnChecked(@Param("userId") Integer userId,@Param("productId")Integer productId, @Param("checked") int checked);
+
+    int getCountByUserId(Integer userId);
 }

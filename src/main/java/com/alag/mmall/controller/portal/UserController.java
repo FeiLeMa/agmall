@@ -41,6 +41,7 @@ public class UserController {
             return ret;
         }
         session.setAttribute(Const.CURRENT_USER, ret.getData());
+        logger.info("欢迎{}您回来！", ((User) ret.getData()).getUsername());
         return ServerResponse.createBySuccessMessage("登录成功！");
     }
 
@@ -119,5 +120,6 @@ public class UserController {
         }
         return userService.getInfomationByCurrentUserId(sessionUser.getId());
     }
+
 
 }

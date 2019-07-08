@@ -2,6 +2,9 @@ package com.alag.mmall.mapper;
 
 import com.alag.mmall.model.OrderItem;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
+
+import java.util.List;
 
 @Mapper
 public interface OrderItemMapper {
@@ -52,4 +55,6 @@ public interface OrderItemMapper {
      * @mbggenerated Mon Jul 01 16:02:53 CST 2019
      */
     int updateByPrimaryKey(OrderItem record);
+
+    List<OrderItem> selectByOrderNoAndUserId(@Param("orderNo") Long orderNo, @Param("userId")Integer userId);
 }

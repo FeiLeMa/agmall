@@ -28,7 +28,7 @@ public class UserController {
      * @param session
      * @return
      */
-    @PostMapping("login")
+    @GetMapping("login")
     public ServerResponse login(
             @RequestParam(required = true, value = "username") String username,
             @RequestParam(required = true, value = "password") String password,

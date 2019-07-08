@@ -2,6 +2,7 @@ package com.alag.mmall.mapper;
 
 import com.alag.mmall.model.Order;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 @Mapper
 public interface OrderMapper {
@@ -52,4 +53,6 @@ public interface OrderMapper {
      * @mbggenerated Mon Jul 01 16:02:53 CST 2019
      */
     int updateByPrimaryKey(Order record);
+
+    Order selectByOrderNoAndUserId(@Param("orderNo") Long orderNo,@Param("userId") Integer userId);
 }

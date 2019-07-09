@@ -1,12 +1,12 @@
 package com.alag.mmall.service.impl;
 
-import com.alag.mmall.common.BigDecimalUtil;
-import com.alag.mmall.common.PropertiesUtil;
-import com.alag.mmall.common.ServerResponse;
+import com.alag.mmall.common.*;
 import com.alag.mmall.mapper.OrderItemMapper;
 import com.alag.mmall.mapper.OrderMapper;
+import com.alag.mmall.mapper.PayInfoMapper;
 import com.alag.mmall.model.Order;
 import com.alag.mmall.model.OrderItem;
+import com.alag.mmall.model.PayInfo;
 import com.alag.mmall.service.OrderService;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -27,6 +28,8 @@ public class OrderServiceImpl implements OrderService {
     private OrderMapper orderMapper;
     @Autowired
     private OrderItemMapper orderItemMapper;
+    @Autowired
+    private PayInfoMapper payInfoMapper;
 
     public ServerResponse<String> pay(Integer userId,Long orderNo) {
         Order order = orderMapper.selectByOrderNoAndUserId(orderNo,userId);
@@ -57,9 +60,9 @@ public class OrderServiceImpl implements OrderService {
         //创建API对应的request
         AlipayTradePagePayRequest alipayRequest = new AlipayTradePagePayRequest();
         //回跳地址
-        alipayRequest.setReturnUrl("http://localhost:8080/CallBack/return_url.jsp");
+        alipayRequest.setReturnUrl(PropertiesUtil.getProperty("alipay.return_url"));
         //通知地址
-        alipayRequest.setNotifyUrl("http://localhost:8080/CallBack/notify_url.jsp");
+        alipayRequest.setNotifyUrl(PropertiesUtil.getProperty("alipay.notify_url"));
         //业务参数
         alipayRequest.setBizContent("{" +
                 "    \"out_trade_no\":\""+orderNo+"\"," +
@@ -76,5 +79,47 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return ServerResponse.createBySuccess(form);
+    }
+    public ServerResponse aliCallback(Map<String,String> params){
+        Long orderNo = Long.parseLong(params.get("out_trade_no"));
+        String tradeNo = params.get("trade_no");
+        String tradeStatus = params.get("trade_status");
+        Order order = orderMapper.selectByOrderNo(orderNo);
+        if(order == null){
+            return ServerResponse.createByErrorMessage("agmmall的订单,回调忽略");
+        }
+        if(order.getStatus() >= Const.OrderStatusEnum.PAID.getCode()){
+            return ServerResponse.createBySuccess("支付宝重复调用");
+        }
+        if(Const.AlipayCallback.TRADE_STATUS_TRADE_SUCCESS.equals(tradeStatus)){
+            order.setPaymentTime(DateTimeUtil.strToDate(params.get("gmt_payment")));
+            order.setStatus(Const.OrderStatusEnum.PAID.getCode());
+            orderMapper.updateByPrimaryKeySelective(order);
+        }
+
+        PayInfo payInfo = new PayInfo();
+        payInfo.setUserId(order.getUserId());
+        payInfo.setOrderNo(order.getOrderNo());
+        payInfo.setPayPlatform(Const.PayPlatformEnum.ALIPAY.getCode());
+        payInfo.setPlatformNumber(tradeNo);
+        payInfo.setPlatformStatus(tradeStatus);
+
+        payInfoMapper.insert(payInfo);
+
+        return ServerResponse.createBySuccess();
+    }
+
+    @Override
+    public ServerResponse<Boolean> getOrderStatusByOrderNoAndUserId(Integer userId, Long orderNo) {
+        Order order = orderMapper.selectByOrderNoAndUserId(orderNo, userId);
+        if (order == null) {
+            return ServerResponse.createByErrorMessage("没有该订单");
+        }
+        logger.info(order.getStatus().toString());
+        if (order.getStatus() >= Const.OrderStatusEnum.PAID.getCode()) {
+            return ServerResponse.createBySuccess(true);
+        }
+
+        return ServerResponse.createBySuccess(false);
     }
 }

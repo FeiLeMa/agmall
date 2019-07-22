@@ -6,7 +6,6 @@ import com.alag.mmall.common.ResponseCode;
 import com.alag.mmall.common.ServerResponse;
 import com.alag.mmall.model.User;
 import com.alag.mmall.service.OrderService;
-import com.alag.mmall.vo.OrderVo;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.google.common.collect.Maps;

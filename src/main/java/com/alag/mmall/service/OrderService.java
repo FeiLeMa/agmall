@@ -10,4 +10,10 @@ public interface OrderService {
     ServerResponse aliCallback(Map<String, String> params);
 
     ServerResponse<Boolean> getOrderStatusByOrderNoAndUserId(Integer userId, Long orderNo);
+
+    ServerResponse createOrder(Integer id, Integer shippingId);
+
+    ServerResponse canncelOrder(Integer userId, Long orderNo);
+
+    ServerResponse getCartProduct(Integer userId);
 }

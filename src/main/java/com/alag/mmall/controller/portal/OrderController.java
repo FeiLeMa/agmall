@@ -14,9 +14,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
@@ -31,6 +29,43 @@ public class OrderController {
     private OrderService orderService;
     private static Logger logger = LoggerFactory.getLogger(OrderController.class);
 
+    @PostMapping("create")
+    @ResponseBody
+    public ServerResponse create(HttpSession session,
+                                 @RequestParam(value = "shippingId",required = true) Integer shippingId) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "请先登录后在操作");
+        }
+        return orderService.createOrder(user.getId(),shippingId);
+    }
+
+    @PutMapping("canncel")
+    @ResponseBody
+    public ServerResponse canncel(HttpSession session, Long orderNo) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "请先登录后在操作");
+        }
+        return orderService.canncelOrder(user.getId(),orderNo);
+    }
+
+    /**
+     * 没有下单之前的购物车查询
+     *
+     * @param session
+     * @return
+     */
+    @GetMapping("get_cart_product")
+    @ResponseBody
+    public ServerResponse getCartProduct(HttpSession session) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "请先登录后在操作");
+        }
+        return orderService.getCartProduct(user.getId());
+
+    }
 
     @RequestMapping("alipay")
     public String pay(Model model, HttpSession session, @RequestParam(value = "orderNo",required = true) Long orderNo) {

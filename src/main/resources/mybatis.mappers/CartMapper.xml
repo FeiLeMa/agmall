@@ -166,12 +166,12 @@
         where id = #{id,jdbcType=INTEGER}
     </update>
     <update id="checkedOrUnChecked">
-    update mmall_cart set checked = #{checked},update_time = now()
-    where user_id = #{userId}
-    <if test="productId != null">
-        and product_id = #{productId}
-    </if>
-  </update>
+        update mmall_cart set checked = #{checked},update_time = now()
+        where user_id = #{userId}
+        <if test="productId != null">
+            and product_id = #{productId}
+        </if>
+    </update>
     <select id="selectCartByUserIdAndProductId" parameterType="map" resultMap="BaseResultMap">
         select
         <include refid="Base_Column_List"/>
@@ -187,9 +187,14 @@
     </select>
     <select id="isCheckedByUserId" resultType="int">
     select count(1) from mmall_cart where  checked = 0 and user_id = #{userId}
-  </select>
+    </select>
     <select id="getCountByUserId" resultType="int" parameterType="integer">
         select IFNULL(sum(quantity),0) from mmall_cart where user_id = #{userId}
     </select>
-
+    <select id="selectCheckedCardByUserId" resultMap="BaseResultMap">
+        select
+        <include refid="Base_Column_List"/>
+        from mmall_cart
+        where user_id = #{userId} and checked = 1
+    </select>
 </mapper>

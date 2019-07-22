@@ -6,6 +6,7 @@ import com.alag.mmall.common.ResponseCode;
 import com.alag.mmall.common.ServerResponse;
 import com.alag.mmall.model.User;
 import com.alag.mmall.service.OrderService;
+import com.alag.mmall.vo.OrderVo;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.google.common.collect.Maps;
@@ -66,6 +67,40 @@ public class OrderController {
         return orderService.getCartProduct(user.getId());
 
     }
+
+    @GetMapping("detail")
+    @ResponseBody
+    public ServerResponse getDetail(HttpSession session,Long orderNo) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "请先登录后在操作");
+        }
+        return orderService.getDetail(user.getId(),orderNo);
+    }
+
+    @GetMapping("list")
+    @ResponseBody
+    public ServerResponse list(HttpSession session,
+                               @RequestParam(value = "pageNum", defaultValue = "1") Integer pageNum,
+                               @RequestParam(value = "pageSize", defaultValue = "1") Integer pageSize) {
+        User user = (User) session.getAttribute(Const.CURRENT_USER);
+        if (user == null) {
+            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "请先登录后在操作");
+        }
+        return orderService.list(user.getId(),pageNum,pageSize);
+    }
+
+
+
+
+
+
+
+
+
+
+
+
 
     @RequestMapping("alipay")
     public String pay(Model model, HttpSession session, @RequestParam(value = "orderNo",required = true) Long orderNo) {

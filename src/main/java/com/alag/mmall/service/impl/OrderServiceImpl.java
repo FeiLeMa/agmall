@@ -12,6 +12,8 @@ import com.alipay.api.AlipayApiException;
 import com.alipay.api.AlipayClient;
 import com.alipay.api.DefaultAlipayClient;
 import com.alipay.api.request.AlipayTradePagePayRequest;
+import com.github.pagehelper.PageHelper;
+import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +50,7 @@ public class OrderServiceImpl implements OrderService {
             return serverResponse;
         }
 
-        BigDecimal payment = this.calPayment((List<OrderItem>)serverResponse.getData());
+        BigDecimal payment = this.calPayment((List<OrderItem>) serverResponse.getData());
 
         Order order = this.assembleOrder(userId, shippingId, payment);
         if (order == null) {
@@ -116,6 +118,41 @@ public class OrderServiceImpl implements OrderService {
         return ServerResponse.createBySuccess(orderProductVo);
     }
 
+    @Override
+    public ServerResponse getDetail(Integer userId, Long orderNo) {
+        Order order = orderMapper.selectByOrderNoAndUserId(orderNo, userId);
+        if (null == order) {
+            return ServerResponse.createByErrorMessage("没找到该订单");
+        }
+        List<OrderItem> orderItemList = orderItemMapper.selectByOrderNoAndUserId(orderNo, userId);
+        OrderVo orderVo = this.assembleOrderVo(order, orderItemList);
+
+        return ServerResponse.createBySuccess(orderVo);
+    }
+
+    @Override
+    public ServerResponse list(Integer userId, Integer pageNum, Integer pageSize) {
+        PageHelper.startPage(pageNum, pageSize);
+        List<Order> orderList = orderMapper.selectByUserId(userId);
+        List<OrderVo> orderVoList = this.assembleOrderVoList(orderList);
+        PageInfo pageInfo = new PageInfo(orderList);
+        pageInfo.setList(orderVoList);
+
+        return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    private List<OrderVo> assembleOrderVoList(List<Order> orderList) {
+        List<OrderVo> orderVoList = Lists.newArrayList();
+        for (Order order : orderList) {
+            Long orderNo = order.getOrderNo();
+            Integer userId = order.getUserId();
+            List<OrderItem> orderItemList = orderItemMapper.selectByOrderNoAndUserId(orderNo, userId);
+            OrderVo orderVo = this.assembleOrderVo(order, orderItemList);
+            orderVoList.add(orderVo);
+        }
+        return orderVoList;
+    }
+
 
     private OrderVo assembleOrderVo(Order order, List<OrderItem> orderItemList) {
         OrderVo orderVo = new OrderVo();
@@ -145,7 +182,7 @@ public class OrderServiceImpl implements OrderService {
         orderVo.setImageHost(PropertiesUtil.getProperty("ftp.server.http.prefix"));
         List<OrderItemVo> orderItemVoList = Lists.newArrayList();
 
-        for(OrderItem orderItem : orderItemList){
+        for (OrderItem orderItem : orderItemList) {
             OrderItemVo orderItemVo = assembleOrderItemVo(orderItem);
             orderItemVoList.add(orderItemVo);
         }
@@ -188,9 +225,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     private void reduceProductStock(List<OrderItem> orderItemList) {
-        for(OrderItem orderItem : orderItemList){
+        for (OrderItem orderItem : orderItemList) {
             Product product = productMapper.selectByPrimaryKey(orderItem.getProductId());
-            product.setStock(product.getStock()-orderItem.getQuantity());
+            product.setStock(product.getStock() - orderItem.getQuantity());
             productMapper.updateByPrimaryKeySelective(product);
         }
     }
@@ -240,7 +277,7 @@ public class OrderServiceImpl implements OrderService {
             orderItem.setProductImage(product.getMainImage());
             orderItem.setProductName(product.getName());
             orderItem.setCurrentUnitPrice(product.getPrice());
-            orderItem.setTotalPrice(BigDecimalUtil.mul(product.getPrice().doubleValue(),cartItem.getQuantity()));
+            orderItem.setTotalPrice(BigDecimalUtil.mul(product.getPrice().doubleValue(), cartItem.getQuantity()));
 
             orderItemList.add(orderItem);
         }
@@ -251,21 +288,6 @@ public class OrderServiceImpl implements OrderService {
         Long nowTime = System.currentTimeMillis();
         return nowTime + new Random().nextInt(100);
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     public ServerResponse<String> pay(Integer userId, Long orderNo) {

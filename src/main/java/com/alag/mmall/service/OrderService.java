@@ -16,4 +16,8 @@ public interface OrderService {
     ServerResponse canncelOrder(Integer userId, Long orderNo);
 
     ServerResponse getCartProduct(Integer userId);
+
+    ServerResponse getDetail(Integer id, Long orderNo);
+
+    ServerResponse list(Integer id, Integer pageNum, Integer pageSize);
 }

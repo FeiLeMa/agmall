@@ -4,7 +4,7 @@ spring:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.jdbc.Driver
     # 填写你数据库的url、登录名、密码和数据库名
-    url: jdbc:mysql://127.0.0.1:3306/agmall?useSSL=false&characterEncoding=utf8
+    url: jdbc:mysql://108.160.143.170:3306/agmall?useSSL=false&characterEncoding=utf8
     username: root
     password: 123456
     ###数据源的其他配置

@@ -15,9 +15,8 @@ import com.alag.mmall.vo.ProductListVo;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +24,8 @@ import java.sql.Date;
 import java.util.List;
 
 @Service
+@Slf4j
 public class ProductServiceImpl implements ProductService {
-    private static Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     @Autowired
     private ProductMapper productMapper;
@@ -184,18 +183,18 @@ public class ProductServiceImpl implements ProductService {
 
     @Override
     public ServerResponse<PageInfo> getListByKeyword(String keyword, Integer categoryId, Integer pageNum, Integer pageSize) {
-        logger.info("keyword:{},categoryId:{},pageNum:{},pageSize:{}",keyword, categoryId, pageNum, pageSize);
+        log.info("keyword:{},categoryId:{},pageNum:{},pageSize:{}",keyword, categoryId, pageNum, pageSize);
         if (StringUtils.isBlank(keyword) && null == categoryId) {
             return ServerResponse.createByErrorCodeMessage(ResponseCode.ILLEGAL_ARGUMENT.getCode(), "参数不可为空");
         }
 
         Category category = categoryMapper.selectByPrimaryKey(categoryId);
-        logger.info("category:",category);
+        log.info("category:",category);
         if (category == null && StringUtils.isBlank(keyword)) {
             PageHelper.startPage(pageNum, pageSize);
             List<ProductListVo> productList = Lists.newArrayList();
             PageInfo pageInfo = new PageInfo(productList);
-            logger.info("没有查到数据");
+            log.info("没有查到数据");
             return ServerResponse.createBySuccess(pageInfo);
         }
         if (StringUtils.isNotBlank(keyword)) {

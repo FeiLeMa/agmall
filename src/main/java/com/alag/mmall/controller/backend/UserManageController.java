@@ -4,9 +4,8 @@ import com.alag.mmall.common.Const;
 import com.alag.mmall.common.ServerResponse;
 import com.alag.mmall.model.User;
 import com.alag.mmall.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -17,10 +16,10 @@ import javax.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/manage/user")
+@Slf4j
 public class UserManageController {
     @Autowired
     private UserService userService;
-    private static Logger logger = LoggerFactory.getLogger(UserManageController.class);
 
     @PostMapping("login")
     public ServerResponse<User> login(
@@ -40,7 +39,8 @@ public class UserManageController {
             }
         }
         session.setAttribute(Const.CURRENT_USER, ret.getData());
-        logger.info("==================LOGIN SUCCESS=====================");
+
+        log.info("==================LOGIN SUCCESS=====================");
         return ServerResponse.createBySuccessMessage("登录成功！");
     }
 }

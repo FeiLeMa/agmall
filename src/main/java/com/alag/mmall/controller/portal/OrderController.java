@@ -9,8 +9,7 @@ import com.alag.mmall.service.OrderService;
 import com.alipay.api.AlipayApiException;
 import com.alipay.api.internal.util.AlipaySignature;
 import com.google.common.collect.Maps;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -23,11 +22,11 @@ import java.util.Map;
 
 @Controller
 @RequestMapping("order")
+@Slf4j
 public class OrderController {
 
     @Autowired
     private OrderService orderService;
-    private static Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @PostMapping("create")
     @ResponseBody
@@ -117,13 +116,13 @@ public class OrderController {
     @RequestMapping("alipay_callback")
     @ResponseBody
     public ServerResponse<Map<String,String>> alipayCallback(HttpServletRequest request) {
-        logger.info("========================== callbackRequest ===========================");
+        log.info("========================== callbackRequest ===========================");
         Map<String, String[]> parameterMap = request.getParameterMap();
         Map<String, String> retMap = Maps.newHashMap();
         for (String key : parameterMap.keySet()) {
             String[] values = parameterMap.get(key);
             for (int i = 0; i <values.length ; i++) {
-                logger.info("key:{}---value:{}",key,values[i]);
+                log.info("key:{}---value:{}",key,values[i]);
                 retMap.put(key, values[i]);
             }
         }
@@ -133,7 +132,7 @@ public class OrderController {
     @RequestMapping("alipay_notify")
     @ResponseBody
     public Object alipayNotify(HttpServletRequest request) throws AlipayApiException {
-        logger.info("========================== notifyRequest ===========================");
+        log.info("========================== notifyRequest ===========================");
         Map<String,String> params = Maps.newHashMap();
         Map requestParams = request.getParameterMap();
         for(Iterator iter = requestParams.keySet().iterator(); iter.hasNext();){
@@ -144,24 +143,24 @@ public class OrderController {
                 valueStr = (i == values.length -1)?valueStr + values[i]:valueStr + values[i]+",";
             }
 
-            logger.info("key:{}-----value:{}",name,valueStr);
+            log.info("key:{}-----value:{}",name,valueStr);
             params.put(name,valueStr);
 
         }
         params.remove("sign_type");
         boolean signVerified = AlipaySignature.rsaCheckV2(params, PropertiesUtil.getProperty("alipay.alipay_public_key"), PropertiesUtil.getProperty("alipay.charset"), PropertiesUtil.getProperty("alipay.sign_type")); //调用SDK验证签名
         if(signVerified){
-            logger.info("验签成功,正在处理业务...");
+            log.info("验签成功,正在处理业务...");
             ServerResponse response = orderService.aliCallback(params);
             if (response.isSuccess()) {
-                logger.info("业务处理成功，返回支付宝成功");
+                log.info("业务处理成功，返回支付宝成功");
                 return Const.AlipayCallback.RESPONSE_SUCCESS;
             } else {
-                logger.info("业务处理失败返回支付宝失败");
+                log.info("业务处理失败返回支付宝失败");
                 return Const.AlipayCallback.RESPONSE_FAILED;
             }
         }else{
-            logger.info("验签失败");
+            log.info("验签失败");
             return ServerResponse.createByErrorMessage("非法请求,验证不通过!");
         }
     }

@@ -11,9 +11,8 @@ import com.alag.mmall.service.ProductService;
 import com.alag.mmall.vo.ProductDetailVo;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Maps;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.ClassUtils;
 import org.springframework.web.bind.annotation.*;
@@ -25,8 +24,8 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/manage/product")
+@Slf4j
 public class ProductManageController {
-    private static Logger logger = LoggerFactory.getLogger(ProductManageController.class);
 
     @Autowired
     private ProductService productService;
@@ -45,7 +44,7 @@ public class ProductManageController {
 
     @PostMapping("save_product")
     public ServerResponse saveProduct(HttpSession session,Product product) {
-        logger.info(product.toString());
+        log.info(product.toString());
         ServerResponse isAdmin = this.checkAdmin(session);
         if (!isAdmin.isSuccess()) {
             return isAdmin;

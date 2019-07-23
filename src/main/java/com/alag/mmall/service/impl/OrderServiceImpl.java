@@ -15,8 +15,7 @@ import com.alipay.api.request.AlipayTradePagePayRequest;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.google.common.collect.Lists;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,8 +25,8 @@ import java.util.Map;
 import java.util.Random;
 
 @Service
+@Slf4j
 public class OrderServiceImpl implements OrderService {
-    private static Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
     @Autowired
     private OrderMapper orderMapper;
     @Autowired
@@ -302,12 +301,12 @@ public class OrderServiceImpl implements OrderService {
             String productName = orderItem.getProductName();
             Integer quantity = orderItem.getQuantity();
             BigDecimal totalPrice = orderItem.getTotalPrice();
-            logger.info(productName + ":" + totalPrice);
+            log.info(productName + ":" + totalPrice);
             subject.append(productName).append("X").append(quantity).append(" , ");
             totalAmount = BigDecimalUtil.add(totalAmount.doubleValue(), totalPrice.doubleValue());
         }
-        logger.info("共有商品,{}", subject);
-        logger.info("总计价格{},", totalAmount);
+        log.info("共有商品,{}", subject);
+        log.info("总计价格{},", totalAmount);
         AlipayClient alipayClient = new DefaultAlipayClient(
                 PropertiesUtil.getProperty("alipay.url"),
                 PropertiesUtil.getProperty("alipay.app_id"),
@@ -332,7 +331,7 @@ public class OrderServiceImpl implements OrderService {
         String form = "";
         try {
             form = alipayClient.pageExecute(alipayRequest).getBody();
-            logger.info(form);
+            log.info(form);
         } catch (AlipayApiException e) {
             e.printStackTrace();
         }
@@ -375,7 +374,7 @@ public class OrderServiceImpl implements OrderService {
         if (order == null) {
             return ServerResponse.createByErrorMessage("没有该订单");
         }
-        logger.info(order.getStatus().toString());
+        log.info(order.getStatus().toString());
         if (order.getStatus() >= Const.OrderStatusEnum.PAID.getCode()) {
             return ServerResponse.createBySuccess(true);
         }

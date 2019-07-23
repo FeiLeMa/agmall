@@ -5,9 +5,8 @@ import com.alag.mmall.common.ResponseCode;
 import com.alag.mmall.common.ServerResponse;
 import com.alag.mmall.model.User;
 import com.alag.mmall.service.UserService;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,10 +15,10 @@ import javax.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/user/")
+@Slf4j
 public class UserController {
     @Autowired
     private UserService userService;
-    private static Logger logger = LoggerFactory.getLogger(UserController.class);
     /**
      * 用户登录
      *
@@ -41,7 +40,7 @@ public class UserController {
             return ret;
         }
         session.setAttribute(Const.CURRENT_USER, ret.getData());
-        logger.info("欢迎{}您回来！", ((User) ret.getData()).getUsername());
+        log.info("欢迎{}您回来！", ((User) ret.getData()).getUsername());
         return ServerResponse.createBySuccessMessage("登录成功！");
     }
 
@@ -53,7 +52,7 @@ public class UserController {
 
     @PostMapping("register")
     public ServerResponse register(User user) {
-        logger.info(user.toString());
+        log.info(user.toString());
         return userService.register(user);
     }
 
@@ -78,7 +77,7 @@ public class UserController {
 
     @PostMapping("check_answer")
     public ServerResponse checkAnswer(String username, String question, String answer) {
-        logger.info(username + "," + question + "," + answer);
+        log.info(username + "," + question + "," + answer);
         return userService.checkQuestion(username, question, answer);
     }
 
@@ -89,7 +88,7 @@ public class UserController {
 
     @PostMapping("online_reset_password")
     public ServerResponse resetPasswordBySession(String oldPasswd, String newPasswd, HttpSession session) {
-        logger.info(oldPasswd + "," + newPasswd);
+        log.info(oldPasswd + "," + newPasswd);
         User sessionUser = (User) session.getAttribute(Const.CURRENT_USER);
         if (sessionUser == null) {
             return ServerResponse.createByErrorMessage("用户未登录无法在线修改密码");

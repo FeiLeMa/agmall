@@ -6,9 +6,8 @@ import com.alag.mmall.model.Category;
 import com.alag.mmall.service.CategoryService;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -18,12 +17,12 @@ import java.util.List;
 import java.util.Set;
 
 @Service
+@Slf4j
 public class CategoryServiceImp implements CategoryService {
     private static Set<Integer> categorySet = Sets.newHashSet();
 
     @Autowired
     private CategoryMapper categoryMapper;
-    private Logger logger = LoggerFactory.getLogger(CategoryServiceImp.class);
 
     @Override
     public ServerResponse addCategory(String categoryName, Integer parentId) {
@@ -62,7 +61,7 @@ public class CategoryServiceImp implements CategoryService {
     public ServerResponse<List<Category>> getParallelCategoryByParentId(Integer categoryId) {
         List<Category> categoryList = categoryMapper.selectCategoryByParentId(categoryId);
         if (CollectionUtils.isEmpty(categoryList)) {
-            logger.error("当前节点下没有子节点");
+            log.error("当前节点下没有子节点");
         }
         return ServerResponse.createBySuccess(categoryList);
     }
@@ -86,7 +85,7 @@ public class CategoryServiceImp implements CategoryService {
         for (Category category : categoryList) {
             Integer id = category.getId();
             categorySet.add(id);
-            logger.info("~~~~   "+id +"刚放入静态Set中");
+            log.info("~~~~   "+id +"刚放入静态Set中");
         }
         for (Category category : categoryList) {
             this.getIdByReRcursion(category.getId());

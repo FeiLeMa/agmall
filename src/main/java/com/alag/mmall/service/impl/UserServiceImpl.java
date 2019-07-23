@@ -3,7 +3,7 @@ package com.alag.mmall.service.impl;
 import com.alag.mmall.common.Const;
 import com.alag.mmall.common.MD5Util;
 import com.alag.mmall.common.ServerResponse;
-import com.alag.mmall.common.TokenCache;
+import com.alag.mmall.config.RedisService;
 import com.alag.mmall.mapper.UserMapper;
 import com.alag.mmall.model.User;
 import com.alag.mmall.service.UserService;
@@ -18,6 +18,8 @@ import java.util.UUID;
 public class UserServiceImpl implements UserService {
     @Autowired
     private UserMapper userMapper;
+    @Autowired
+    private RedisService redisService;
 
     @Override
     public ServerResponse verifyAcc(String username, String password) {
@@ -108,8 +110,8 @@ public class UserServiceImpl implements UserService {
             return ServerResponse.createByErrorMessage("问题回答错误");
         }
         String forgetToken = UUID.randomUUID().toString();
-        TokenCache.setKey(TokenCache.TOKENP_RREFIX+username,forgetToken);
-        return ServerResponse.createBySuccess("问题回答正确",TokenCache.getValue(TokenCache.TOKENP_RREFIX+username));
+        redisService.set(Const.TOKENP_RREFIX+username, forgetToken, 60*60*24L);
+        return ServerResponse.createBySuccess("问题回答正确",redisService.get(Const.TOKENP_RREFIX+username));
     }
 
     @Override
@@ -120,7 +122,8 @@ public class UserServiceImpl implements UserService {
         if (StringUtils.isBlank(token)) {
             return ServerResponse.createByErrorMessage("token不可为空");
         }
-        if (!StringUtils.equals(token, TokenCache.getValue(TokenCache.TOKENP_RREFIX + username))) {
+
+        if (!StringUtils.equals(token,String.valueOf(redisService.get(Const.TOKENP_RREFIX+username)))){
             return ServerResponse.createByErrorMessage("token不匹配");
         }
 

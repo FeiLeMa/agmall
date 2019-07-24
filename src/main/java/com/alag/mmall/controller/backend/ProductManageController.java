@@ -1,5 +1,6 @@
 package com.alag.mmall.controller.backend;
 
+import com.alag.mmall.Interceptor.LoginRequired;
 import com.alag.mmall.common.Const;
 import com.alag.mmall.common.PropertiesUtil;
 import com.alag.mmall.common.ResponseCode;
@@ -33,70 +34,44 @@ public class ProductManageController {
     @Autowired
     private FileService fileService;
 
-    private ServerResponse checkAdmin(HttpSession session) {
-        User sessionUser = (User) session.getAttribute(Const.CURRENT_USER);
-        if (sessionUser == null) {
-            return ServerResponse.createByErrorCodeMessage(ResponseCode.NEED_LOGIN.getCode(), "请先登录再操作");
-        }
-        return sessionUser.getRole().equals(Const.Role.ROLE_ADMIN) ? ServerResponse.createBySuccessMessage("isAdmin") : ServerResponse.createByErrorMessage("该账号不是管理员");
-    }
-
 
     @PostMapping("save_product")
+    @LoginRequired
     public ServerResponse saveProduct(HttpSession session,Product product) {
         log.info(product.toString());
-        ServerResponse isAdmin = this.checkAdmin(session);
-        if (!isAdmin.isSuccess()) {
-            return isAdmin;
-        }
         return productService.saveProduct(product);
     }
     @PostMapping("set_sale_status")
+    @LoginRequired
     public ServerResponse<String> setSaleStatus(HttpSession session,Integer productId, Integer status) {
-        ServerResponse isAdmin = this.checkAdmin(session);
-        if (!isAdmin.isSuccess()) {
-            return isAdmin;
-        }
         return productService.setSaleStatus(productId, status);
     }
 
     @GetMapping("get_detail")
+    @LoginRequired
     public ServerResponse<ProductDetailVo> getDetail(HttpSession session, Integer productId) {
-        ServerResponse isAdmin = this.checkAdmin(session);
-        if (!isAdmin.isSuccess()) {
-            return isAdmin;
-        }
         return productService.getDetail(productId);
     }
 
     @GetMapping("list")
+    @LoginRequired
     public ServerResponse<PageInfo> list(HttpSession session,
                                          @RequestParam(value = "pageNum",defaultValue = "1") int pageNum,
                                          @RequestParam(value = "pageSize",defaultValue = "10")int pageSize) {
-        ServerResponse isAdmin = this.checkAdmin(session);
-        if (!isAdmin.isSuccess()) {
-            return isAdmin;
-        }
         return productService.list(pageNum,pageSize);
     }
 
     @GetMapping("search")
+    @LoginRequired
     public ServerResponse<PageInfo> search(HttpSession session,
                                            String productName,Integer productId,
                                            @RequestParam(value = "pageNum",defaultValue = "1") int pageNum,
                                            @RequestParam(value = "pageSize",defaultValue = "10")int pageSize) {
-        ServerResponse isAdmin = this.checkAdmin(session);
-        if (!isAdmin.isSuccess()) {
-            return isAdmin;
-        }
         return productService.getProductByIdAndName(pageNum, pageSize, productName, productId);
     }
     @PostMapping("upload")
+    @LoginRequired
     public ServerResponse<Map> upload(HttpSession session, @RequestParam(value = "upload_file",required = true)MultipartFile file) {
-        ServerResponse isAdmin = this.checkAdmin(session);
-        if (!isAdmin.isSuccess()) {
-            return isAdmin;
-        }
         String path = ClassUtils.getDefaultClassLoader().getResource("").getPath() + "upload/";
         String targetFileName = fileService.upload(file, path);
         String url = PropertiesUtil.getProperty("ftp.server.http.prefix")+targetFileName;
@@ -106,16 +81,12 @@ public class ProductManageController {
         fileMap.put("url",url);
         return ServerResponse.createBySuccess(fileMap);
     }
+
     @PostMapping("richtext_img_upload")
+    @LoginRequired
     public Map richtextImgUpload(HttpSession session, HttpServletResponse response,
                                                  @RequestParam(value = "upload_file",required = true)MultipartFile file) {
         Map resultMap = Maps.newHashMap();
-        ServerResponse isAdmin = this.checkAdmin(session);
-        if (!isAdmin.isSuccess()) {
-            resultMap.put("success",false);
-            resultMap.put("msg","无权限操作");
-            return resultMap;
-        }
         String path = ClassUtils.getDefaultClassLoader().getResource("").getPath() + "upload/";
         String targetFileName = fileService.upload(file, path);
         if(StringUtils.isBlank(targetFileName)){

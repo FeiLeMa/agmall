@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -138,6 +139,37 @@ public class OrderServiceImpl implements OrderService {
         pageInfo.setList(orderVoList);
 
         return ServerResponse.createBySuccess(pageInfo);
+    }
+
+    @Override
+    public void closeOrder(int hour) {
+        Date closeTime = DateTimeUtil.addHours(new Date(), -hour);
+        List<Order> needCloseOrderList = orderMapper.selectByTimeAndStatus(closeTime, Const.OrderStatusEnum.NO_PAY.getCode());
+        for (Order order : needCloseOrderList) {
+            //将订单状态改为交易关闭
+            Long orderNo = order.getOrderNo();
+            order.setStatus(Const.OrderStatusEnum.ORDER_CLOSE.getCode());
+            order.setCloseTime(new Date());
+            int row = orderMapper.updateByPrimaryKeySelective(order);
+            if (row > 0) {
+                log.info("订单{},已被关闭", orderNo);
+            }
+            List<OrderItem> orderItemList = orderItemMapper.selectProductIdByOrderNo(orderNo);
+            for (OrderItem orderItem : orderItemList) {
+                Integer id = orderItem.getProductId();
+                Integer quantity = orderItem.getQuantity();
+                Integer stock = productMapper.selectStockByProductId(id);
+
+                Product product = new Product();
+                product.setId(id);
+                product.setStock(stock + quantity);
+
+                row = productMapper.updateByPrimaryKeySelective(product);
+                if (row > 0) {
+                    log.info("产品id{},库存{},已经恢复至{}",id,stock,stock+orderItem.getQuantity());
+                }
+            }
+        }
     }
 
     private List<OrderVo> assembleOrderVoList(List<Order> orderList) {

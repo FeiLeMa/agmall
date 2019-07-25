@@ -5,6 +5,7 @@ import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -18,7 +19,12 @@ public class DateTimeUtil {
     //Date->str
     public static final String STANDARD_FORMAT = "yyyy-MM-dd HH:mm:ss";
 
-
+    public static Date addHours(Date date, int hours) {
+        Calendar rightNow = Calendar.getInstance();
+        rightNow.add(Calendar.HOUR,hours);
+        Date time = rightNow.getTime();
+        return time;
+    }
 
     public static Date strToDate(String dateTimeStr,String formatStr){
         DateTimeFormatter dateTimeFormatter = DateTimeFormat.forPattern(formatStr);
@@ -54,7 +60,7 @@ public class DateTimeUtil {
     public static void main(String[] args) {
         System.out.println(DateTimeUtil.dateToStr(new Date(),"yyyy-MM-dd HH:mm:ss"));
         System.out.println(DateTimeUtil.strToDate("2010-01-01 11:11:11","yyyy-MM-dd HH:mm:ss"));
-
+        System.out.println(DateTimeUtil.addHours(new Date(),-1));
     }
 
 

@@ -20,4 +20,6 @@ public interface OrderService {
     ServerResponse getDetail(Integer id, Long orderNo);
 
     ServerResponse list(Integer id, Integer pageNum, Integer pageSize);
+
+    void closeOrder(int hour);
 }

@@ -4,6 +4,7 @@ import com.alag.mmall.model.Order;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
+import java.util.Date;
 import java.util.List;
 
 @Mapper
@@ -61,4 +62,6 @@ public interface OrderMapper {
     Order selectByOrderNo(Long orderNo);
 
     List<Order> selectByUserId(Integer userId);
+
+    List<Order> selectByTimeAndStatus(@Param("closeTime") Date closeTime, @Param("status") int status);
 }

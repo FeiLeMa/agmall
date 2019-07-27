@@ -42,8 +42,8 @@ public class CloseOrderTask {
 
     @Scheduled(cron = "0 */1 * * * ?")
     public void closeOrderTaskV3() {
-        String lockTimeout = PropertiesUtil.getProperty("lock.timeout", "60000");
-        boolean result = redisService.setNX(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK, System.currentTimeMillis()+lockTimeout);
+        Long lockTimeout = Long.valueOf(PropertiesUtil.getProperty("lock.timeout", "5000"));
+        boolean result = redisService.setNX(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK, String.valueOf(System.currentTimeMillis()+lockTimeout));
         if (result) {
             log.info("锁已被抢到，执行业务");
             this.closeOrder(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK);
@@ -51,10 +51,10 @@ public class CloseOrderTask {
             log.info("锁已被占用，尝试重置再次获取");
             Object objret =  redisService.get(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK);
             if (objret != null && System.currentTimeMillis() > Long.valueOf(objret.toString())) {
-                byte[] ret = redisService.getSet(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK, System.currentTimeMillis() + lockTimeout);
+                byte[] ret = redisService.getSet(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK, String.valueOf(System.currentTimeMillis()+lockTimeout));
                 //ret返回null的时候说明这个锁已经不存在，那么会直接set，获取锁
 
-                if (ret == null || lockTimeout.equals(new String(ret))) {
+                if (ret == null || objret.toString().equals(new String(ret))) {
                     log.info("重置，获得锁");
                     closeOrder(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK);
                 } else {

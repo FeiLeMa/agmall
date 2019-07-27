@@ -31,7 +31,7 @@ public class CloseOrderTask {
     @Scheduled(cron = "0 */1 * * * ?")
     public void closeOrderTaskV2() {
         String lockTimeout = PropertiesUtil.getProperty("lock.timeout", "50000");
-        boolean result = redisService.setNX(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK, lockTimeout);
+        boolean result = redisService.setNX(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK, System.currentTimeMillis()+lockTimeout);
         if (result) {
             log.info("锁已被抢到，执行业务");
             this.closeOrder(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK);
@@ -42,7 +42,7 @@ public class CloseOrderTask {
     }
 
     private void closeOrder(String lockName) {
-        redisService.expire(lockName, 50000L);
+        redisService.expire(lockName, 50L);
         log.info("设置有效时间成功");
         log.info("开始关闭订单");
         int hour = Integer.parseInt(PropertiesUtil.getProperty("close.order.task.hour", "1"));

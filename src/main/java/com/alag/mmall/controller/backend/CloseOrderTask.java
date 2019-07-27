@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
-import java.util.function.Predicate;
 
 @Component
 @Slf4j
@@ -50,8 +49,8 @@ public class CloseOrderTask {
             this.closeOrder(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK);
         } else {
             log.info("锁已被占用，尝试重置再次获取");
-            lockTimeout = (String) redisService.get(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK);
-            if (lockTimeout != null && System.currentTimeMillis() > Long.valueOf(lockTimeout)) {
+            Object objret =  redisService.get(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK);
+            if (objret != null && System.currentTimeMillis() > Long.valueOf(objret.toString())) {
                 byte[] ret = redisService.getSet(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK, System.currentTimeMillis() + lockTimeout);
                 //ret返回null的时候说明这个锁已经不存在，那么会直接set，获取锁
 

@@ -41,9 +41,10 @@ public class RedisService {
         });
     }
 
-    public boolean getSet(final String key, String value) {
-        return (Boolean) redisTemplate.execute((RedisCallback) connection -> {
-            return connection.getSet(key.getBytes(), value.getBytes());
+    public byte[] getSet(final String key, String value) {
+        return (byte[]) redisTemplate.execute((RedisCallback) connection -> {
+            byte[] result = connection.getSet(key.getBytes(), value.getBytes());
+            return result;
         });
     }
 

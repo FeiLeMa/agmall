@@ -3,11 +3,15 @@ package com.alag.mmall.controller.backend;
 import com.alag.mmall.common.Const;
 import com.alag.mmall.common.PropertiesUtil;
 import com.alag.mmall.config.RedisService;
+import com.alag.mmall.config.RedissonManager;
 import com.alag.mmall.service.OrderService;
 import lombok.extern.slf4j.Slf4j;
+import org.redisson.api.RLock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
+
+import java.util.concurrent.TimeUnit;
 
 
 @Component
@@ -18,6 +22,8 @@ public class CloseOrderTask {
     private OrderService orderService;
     @Autowired
     private RedisService redisService;
+    @Autowired
+    private RedissonManager redissonManager;
 
 //    @Scheduled(cron = "0 */1 * * * ?")
     public void closeOrderTaskV1() {
@@ -40,7 +46,7 @@ public class CloseOrderTask {
         log.info("订单关闭任务结束");
     }
 
-    @Scheduled(cron = "0 */1 * * * ?")
+//    @Scheduled(cron = "0 */1 * * * ?")
     public void closeOrderTaskV3() {
         Long lockTimeout = Long.valueOf(PropertiesUtil.getProperty("lock.timeout", "5000"));
         boolean result = redisService.setNX(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK, String.valueOf(System.currentTimeMillis()+lockTimeout));
@@ -67,7 +73,32 @@ public class CloseOrderTask {
         }
         log.info("订单关闭任务结束");
     }
-    private void closeOrder(String lockName) {
+    @Scheduled(cron = "0 */1 * * * ?")
+    public void closeOrderTaskV4() {
+        RLock lock = redissonManager.getRedisson().getLock(Const.REDIS_LOCK.CLOSE_ORDER_TASK_LOCK);
+        boolean getLock = false;
+        try {
+            if (getLock = lock.tryLock(2, 5, TimeUnit.SECONDS)) {
+                log.info("获取到Redisson分布式锁");
+                int hour = Integer.parseInt(PropertiesUtil.getProperty("close.order.task.hour", "1"));
+                orderService.closeOrder(hour);
+            } else {
+                log.info("Redisson没有获取到分布式锁");
+            }
+        } catch (InterruptedException e) {
+            log.error("Redisson 分布式锁异常");
+        }finally {
+            if (!getLock) {
+                return;
+            }
+            lock.unlock();
+            log.info("Redisson分布式锁已被释放");
+        }
+    }
+
+
+
+        private void closeOrder(String lockName) {
         redisService.expire(lockName, 50L);
         log.info("设置有效时间成功");
         log.info("开始关闭订单");

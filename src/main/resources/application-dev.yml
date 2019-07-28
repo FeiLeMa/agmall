@@ -35,4 +35,4 @@ spring:
 mybatis:
   mapper-locations: classpath:mybatis.mappers/*.xml
 server:
-  port: 9090
+  port: 8080
